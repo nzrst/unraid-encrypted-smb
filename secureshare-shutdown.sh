@@ -1,4 +1,4 @@
 #!/bin/bash
 
 umount /mnt/secure
-cryptsetup close securecontainer1
+cryptsetup close securecontainer
