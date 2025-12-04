@@ -1,0 +1,75 @@
+# Location to hold keys and images
+#     Cache only:   /mnt/cache/secure
+#     Array only:   /mnt/user0/secure
+#     Normal (Cache first, then mover to array):   /mnt/user/secure
+#
+mkdir -p /mnt/cache/secure
+cd /mnt/cache/secure
+
+
+# Create an image file to store secured files:  container1.img
+#
+fallocate -l 10G container1.img
+
+
+# Create a unique key for this container image:  container1.key
+#
+dd if=/dev/urandom of=/mnt/cache/secure/container1.key bs=1024 count=4
+chmod 600 /mnt/cache/secure/container1.key
+
+
+# Create LUKS container with our key file and open it
+#
+cryptsetup luksFormat /mnt/cache/secure/container1.img /mnt/cache/secure/container1.key
+cryptsetup open /mnt/cache/secure/container1.img securecontainer1 --key-file /mnt/cache/secure/container1.key
+
+
+# Make a filesystem on this image
+#
+mkfs.xfs /dev/mapper/securecontainer1
+
+
+# Create actual mount point that we're going to share via SMB
+#
+mkdir -p /mnt/secure
+chown nobody:users /mnt/secure
+chown 777 /mnt/secure
+
+
+# Mount the encrypted container to SMB share location
+#
+mount /dev/mapper/securecontainer1 /mnt/secure
+
+
+# You can umount/mount new containers to this /mnt/secure path without restarting SMB service.
+
+# Create SMB share for /mnt/secure
+# 1. Stop the array
+# 2. In Unraid navigate to 'Settings > SMB > SMB Extras' and apply the following configuration
+#    Replace 'user1' with an account you want to use to access this share or modify configuration as needed
+# 3. Start the array
+#
+[Secure]
+    path = /mnt/secure
+    comment = Encrypted Secure Share
+    browseable = yes
+    writeable = yes
+    create mask = 0660
+    directory mask = 0770
+    force user = nobody
+    force group = users
+    valid users = user1
+
+# At this point you have a functioning secure SMB share, however two additional steps must be done.
+# If you try to restart the array it will hang because it can't close the LUKS container.
+# To resolve this two scripts are required through `User Scripts`.
+#
+# 'Settings > User Scripts'
+# 1. Create a script titled "SecureShare - Startup" mapped to "At Startup of Array"
+#    - Paste content of 'secureshare-startup.sh'
+#
+# 2. Create a script titled "SecureShare - Shutdown" mapped to "At Stopping of Array"
+#    - Paste content of 'secureshare-shutdown.sh'
+
+
+# At this point you can shutdown and startup the array without any issues.
