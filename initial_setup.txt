@@ -41,6 +41,12 @@ chown 777 /mnt/secure
 mount /dev/mapper/securecontainer /mnt/secure
 
 
+# When you're done umount and close everything
+#
+umount /mnt/secure
+cryptsetup close securecontainer
+
+
 # You can umount/mount new containers to this /mnt/secure path without restarting SMB service.
 
 # Create SMB share for /mnt/secure
@@ -60,8 +66,11 @@ mount /dev/mapper/securecontainer /mnt/secure
     force group = users
     valid users = user1
 
-# At this point you have a functioning secure SMB share, however two additional steps must be done.
-# If you try to restart the array it will hang because it can't close the LUKS container.
+# At this point you have a functioning secure SMB share.
+# However two additional steps must be done if you want the share always available.
+# If you try to restart the array with this container active the system will hang because
+# it can't close the LUKS container.
+#
 # To resolve this two scripts are required through `User Scripts`.
 #
 # 'Settings > User Scripts'
