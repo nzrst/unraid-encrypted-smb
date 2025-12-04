@@ -3,7 +3,7 @@
 
 CONTAINER="/mnt/cache/secure/container1.img"
 KEYFILE="/mnt/cache/secure/container1.key"
-MAPPER_NAME="securecontainer1"
+MAPPER_NAME="securecontainer"
 MOUNTPOINT="/mnt/secure"
 
 echo "=== Starting LUKS automount script ==="
