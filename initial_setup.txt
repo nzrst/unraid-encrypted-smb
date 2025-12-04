@@ -21,12 +21,12 @@ chmod 600 /mnt/cache/secure/container1.key
 # Create LUKS container with our key file and open it
 #
 cryptsetup luksFormat /mnt/cache/secure/container1.img /mnt/cache/secure/container1.key
-cryptsetup open /mnt/cache/secure/container1.img securecontainer1 --key-file /mnt/cache/secure/container1.key
+cryptsetup open /mnt/cache/secure/container1.img securecontainer --key-file /mnt/cache/secure/container1.key
 
 
 # Make a filesystem on this image
 #
-mkfs.xfs /dev/mapper/securecontainer1
+mkfs.xfs /dev/mapper/securecontainer
 
 
 # Create actual mount point that we're going to share via SMB
@@ -38,7 +38,7 @@ chown 777 /mnt/secure
 
 # Mount the encrypted container to SMB share location
 #
-mount /dev/mapper/securecontainer1 /mnt/secure
+mount /dev/mapper/securecontainer /mnt/secure
 
 
 # You can umount/mount new containers to this /mnt/secure path without restarting SMB service.
